@@ -42,3 +42,66 @@ app.get('/status', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+app.get('/create-table', async (req, res) => {
+  try {
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS test_users (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(100),
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    res.json({
+      msg: 'Tabla creada correctamente'
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+});
+
+app.get('/insert-user', async (req, res) => {
+  try {
+
+    await pool.query(`
+      INSERT INTO test_users(nombre)
+      VALUES ('Alex')
+    `);
+
+    res.json({
+      msg: 'Usuario insertado correctamente'
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+});
+
+app.get('/users', async (req, res) => {
+  try {
+
+    const result = await pool.query(`
+      SELECT * FROM test_users
+    `);
+
+    res.json(result.rows);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+});
