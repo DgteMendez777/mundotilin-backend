@@ -1,11 +1,13 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const fs = require('fs');
-const path = require('path');
-const pool = require('../config/db');
+import fs from 'fs';
+import path from 'path';
 
-async function runMigrations() {
+import pool from '../config/db';
+
+async function runMigrations(): Promise<void> {
     try {
+
         const migrationsPath = path.join(
             __dirname,
             'migrations'
@@ -17,20 +19,27 @@ async function runMigrations() {
             .sort();
 
         for (const file of files) {
+
             console.log(`Ejecutando migración: ${file}`);
+
             const sql = fs.readFileSync(
                 path.join(migrationsPath, file),
                 'utf8'
             );
+
             await pool.query(sql);
+
             console.log(`${file} completada`);
         }
 
         console.log('Todas las migraciones ejecutadas');
+
         process.exit(0);
 
     } catch (error) {
+
         console.error(error);
+
         process.exit(1);
     }
 }
