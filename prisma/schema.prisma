@@ -81,18 +81,33 @@ model EventCategory {
 }
 
 model Service {
-  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  categoryId  String?        @map("category_id") @db.Uuid
-  name        String         @db.VarChar(100)
-  description String?
-  basePrice   Decimal        @map("base_price") @db.Decimal(10, 2)
-  coverImage  String?        @map("cover_image")
-  isActive    Boolean        @default(true) @map("is_active")
-  createdAt   DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime?      @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  deletedAt   DateTime?      @map("deleted_at") @db.Timestamp(6)
-  category    EventCategory? @relation(fields: [categoryId], references: [id])
-  events      Event[]
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId    String?        @map("category_id") @db.Uuid
+  name          String         @db.VarChar(100)
+  description   String?
+  basePrice     Decimal        @map("base_price") @db.Decimal(10, 2)
+  coverImage    String?        @map("cover_image")
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime?      @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamp(6)
+  category      EventCategory? @relation(fields: [categoryId], references: [id])
+  events        Event[]
+  includedItems ServiceIncludedItem[]
 
   @@map("services")
+}
+
+model ServiceIncludedItem {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceId       String        @map("service_id") @db.Uuid
+  inventoryItemId String        @map("inventory_item_id") @db.Uuid
+  quantity        Int
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt       DateTime?     @map("deleted_at") @db.Timestamp(6)
+  service         Service       @relation(fields: [serviceId], references: [id])
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@map("service_included_items")
 }
