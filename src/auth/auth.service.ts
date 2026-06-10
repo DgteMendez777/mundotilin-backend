@@ -1,25 +1,16 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-
 import { UsersService } from '../users/users.service';
-
 import * as bcrypt from 'bcryptjs';
-
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly usersService: UsersService, private readonly jwtService: JwtService) {}
 
   async register(data: RegisterDto) {
-    const existingUser = await this.usersService.findByEmail(
-      data.email,
-    );
+    const existingUser = await this.usersService.findByEmail(data.email);
 
     if (existingUser) {
       throw new BadRequestException(
@@ -27,23 +18,14 @@ export class AuthService {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(
-      data.password,
-      10,
-    );
-
-    const user = await this.usersService.createUser({
-      ...data,
-      password: hashedPassword,
-    });
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await this.usersService.createUser({ ...data, password: hashedPassword });
 
     return user;
   }
 
   async login(data: LoginDto) {
-    const user = await this.usersService.findByEmail(
-      data.email,
-    );
+    const user = await this.usersService.findByEmail(data.email);
 
     if (!user) {
       throw new UnauthorizedException(
@@ -51,11 +33,7 @@ export class AuthService {
       );
     }
 
-    const isPasswordValid =
-      await bcrypt.compare(
-        data.password,
-        user.passwordHash,
-      );
+    const isPasswordValid = await bcrypt.compare(data.password, user.passwordHash,);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(
@@ -63,14 +41,11 @@ export class AuthService {
       );
     }
 
-    const token = this.jwtService.sign({
-      userId: user.id,
-      role: user.role,
-    });
+    const token = this.jwtService.sign({ userId: user.id, role: user.role });
 
     return {
       message: 'Login exitoso',
-      token,
+      token
     };
   }
 }

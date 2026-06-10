@@ -4,10 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-
-    constructor(
-        private readonly prisma: PrismaService
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     async findAll() {
         return this.prisma.user.findMany();
@@ -15,17 +12,13 @@ export class UsersService {
 
     async findById(id: string) {
         return this.prisma.user.findUnique({
-            where: {
-                id
-            }
+            where: { id }
         });
     }
 
     async findByEmail(email: string) {
         return this.prisma.user.findUnique({
-            where: {
-                email
-            }
+            where: { email }
         });
     }
 
