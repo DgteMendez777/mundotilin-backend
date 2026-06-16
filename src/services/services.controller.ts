@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Delete, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ServicesService } from './services.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -64,7 +64,7 @@ export class ServicesController {
         return this.servicesService.deactivate(id);
     }
 
-    @Patch(':id/remove')
+    @Delete(':id/remove')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('CLOWN')
     @ApiRemoveServiceDocs()
