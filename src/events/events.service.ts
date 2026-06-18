@@ -1,12 +1,36 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { user_role } from '@prisma/client';
+import { event_status, user_role } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 
 @Injectable()
 export class EventsService {
     constructor(private readonly prisma: PrismaService) {}
+
+    private formatEvent(event: any) {
+        return {
+            ...event,
+            eventDate: event.eventDate
+                ?.toISOString()
+                .split('T')[0],
+
+            startTime: event.startTime
+                ? this.formatTime(event.startTime)
+                : null,
+        };
+    }
+
+    private parseTimeToDate(time: string): Date {
+        const [hours, minutes] = time.split(':').map(Number);
+
+        return new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
+    }
+
+    private formatTime(date: Date): string {
+        return date.toISOString().substring(11, 16);
+    }
 
     private async validateEventRelations(data: { clownId?: string; customerId?: string; serviceId?: string; }) {
         if (data.clownId) {
@@ -53,20 +77,24 @@ export class EventsService {
     }
 
     async create(data: CreateEventDto) {
+        if (!data.clownId) {
+            throw new BadRequestException('No se pudo identificar al payaso autenticado');
+        }
+
         await this.validateEventRelations({
             clownId: data.clownId,
             customerId: data.customerId,
             serviceId: data.serviceId,
         });
 
-        return this.prisma.event.create({
+        const event = await this.prisma.event.create({
             data: {
                 clownId: data.clownId,
                 customerId: data.customerId,
                 serviceId: data.serviceId,
                 title: data.title,
                 eventDate: new Date(data.eventDate),
-                startTime: new Date(`1970-01-01T${data.startTime}:00`),
+                startTime: this.parseTimeToDate(data.startTime),
                 address: data.address,
                 googleMapsUrl: data.googleMapsUrl,
                 childrenCount: data.childrenCount,
@@ -80,10 +108,12 @@ export class EventsService {
                 service: true,
             },
         });
+
+        return this.formatEvent(event);
     }
 
     async findAll() {
-        return this.prisma.event.findMany({
+        const events = await this.prisma.event.findMany({
             where: {
                 deletedAt: null,
             },
@@ -96,6 +126,8 @@ export class EventsService {
                 eventDate: 'asc',
             },
         });
+
+        return events.map(event => this.formatEvent(event));
     }
 
     async findOne(id: string) {
@@ -115,7 +147,7 @@ export class EventsService {
             throw new NotFoundException('Evento no encontrado');
         }
 
-        return event;
+        return this.formatEvent(event);
     }
 
     async update(id: string, data: UpdateEventDto) {
@@ -127,7 +159,7 @@ export class EventsService {
             serviceId: data.serviceId,
         });
 
-        return this.prisma.event.update({
+        const event = await this.prisma.event.update({
             where: { id },
             data: {
                 clownId: data.clownId,
@@ -135,7 +167,9 @@ export class EventsService {
                 serviceId: data.serviceId,
                 title: data.title,
                 eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
-                startTime: data.startTime ? new Date(`1970-01-01T${data.startTime}:00`) : undefined,
+                startTime: data.startTime
+                    ? this.parseTimeToDate(data.startTime)
+                    : undefined,
                 address: data.address,
                 googleMapsUrl: data.googleMapsUrl,
                 childrenCount: data.childrenCount,
@@ -149,6 +183,44 @@ export class EventsService {
                 service: true,
             },
         });
+
+        return this.formatEvent(event);
+    }
+
+    async updateStatus(id: string, data: UpdateEventStatusDto) {
+        const event = await this.findOne(id);
+
+        const currentStatus = event.status;
+        const newStatus = data.status;
+
+        if (currentStatus === event_status.FINISHED) {
+            throw new BadRequestException(
+                'No se puede cambiar el estado de un evento finalizado',
+            );
+        }
+
+        if (
+            currentStatus === event_status.PENDING &&
+            newStatus === event_status.FINISHED
+        ) {
+            throw new BadRequestException(
+                'No se puede finalizar un evento pendiente. Primero debe confirmarse',
+            );
+        }
+
+        const updatedEvent = await this.prisma.event.update({
+            where: { id },
+            data: {
+                status: newStatus,
+            },
+            include: {
+                clown: true,
+                customer: true,
+                service: true,
+            },
+        });
+
+        return this.formatEvent(updatedEvent);
     }
 
     async remove(id: string) {
