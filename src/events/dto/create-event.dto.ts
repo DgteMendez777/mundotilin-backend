@@ -7,8 +7,9 @@ export class CreateEventDto {
         example: 'c0711088-e14f-4bc4-9b74-ae93c8c8cca6',
         description: 'ID del usuario payaso asignado al evento',
     })
+    @IsOptional()
     @IsUUID()
-    clownId: string;
+    clownId?: string;
 
     @ApiProperty({
         example: '50af0b7d-f89c-41a2-9bfa-0814e5c97827',

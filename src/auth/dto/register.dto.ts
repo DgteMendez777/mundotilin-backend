@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { user_role } from '@prisma/client';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
 export class RegisterDto {
 
@@ -20,6 +22,14 @@ export class RegisterDto {
     description: 'Correo electrónico'
   })
   email: string;
+
+  @ApiPropertyOptional({
+    example: '12345678',
+    description: 'Carnet de identidad del usuario',
+  })
+  @IsOptional()
+  @IsString()
+  ci?: string;
 
   @ApiProperty({
     example: '123456',

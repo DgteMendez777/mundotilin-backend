@@ -7,6 +7,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ApiGetUsersDocs } from 'src/common/swagger/users/get-users.swagger';
 import { ApiGetUserByIdDocs } from 'src/common/swagger/users/get-user-by-id.swagger';
+import { ApiGetUserByCiDocs } from 'src/common/swagger/users/get-user-by-ci.swagger';
 
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
@@ -19,6 +20,14 @@ export class UsersController {constructor(private readonly usersService: UsersSe
   @ApiGetUsersDocs()
   async findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('search/ci/:ci')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CLOWN')
+  @ApiGetUserByCiDocs()
+  async findByCi(@Param('ci') ci: string) {
+    return this.usersService.findByCi(ci)
   }
 
   @Get(':id')

@@ -7,9 +7,10 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { EventCategoriesModule } from './event-categories/event-categories.module';
 import { ServicesModule } from './services/services.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule],
+  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule, UploadsModule],
   controllers: [AppController],
   providers: [AppService],
 })
