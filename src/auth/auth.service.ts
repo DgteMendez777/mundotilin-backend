@@ -18,6 +18,13 @@ export class AuthService {
       );
     }
 
+    if (data.ci) {
+      const existingCi = await this.usersService.findExistingByCi(data.ci);
+      if (existingCi) {
+        throw new BadRequestException('El CI ya está registrado');
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await this.usersService.createUser({ ...data, password: hashedPassword });
 
