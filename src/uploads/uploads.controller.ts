@@ -143,4 +143,36 @@ export class UploadsController {
       publicId: result.public_id,
     };
   }
+
+  @Post('payment-proof')
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      file: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+    required: ['file'],
+  },
+})
+@UseInterceptors(FileInterceptor('file'))
+async uploadPaymentProof(@UploadedFile() file: Express.Multer.File) {
+  if (!file) {
+    throw new BadRequestException('Debe enviar un comprobante');
+  }
+
+  const result = await this.uploadsService.uploadToFolder(
+    file,
+    'mundotilin/payments',
+    'image',
+  );
+
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
+}
 }
