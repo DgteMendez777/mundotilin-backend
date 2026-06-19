@@ -8,9 +8,13 @@ import { EventsModule } from './events/events.module';
 import { EventCategoriesModule } from './event-categories/event-categories.module';
 import { ServicesModule } from './services/services.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { PublicModule } from './public/public.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { GalleryModule } from './gallery/gallery.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule, UploadsModule],
+  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule, UploadsModule, PublicModule, AnalyticsModule, GalleryModule, TestimonialsModule],
   controllers: [AppController],
   providers: [AppService],
 })
