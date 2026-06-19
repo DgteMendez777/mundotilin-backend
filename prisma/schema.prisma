@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName      String    @map("first_name") @db.VarChar(100)
-  lastName       String    @map("last_name") @db.VarChar(100)
-  email          String    @unique @db.VarChar(255)
-  ci             String?   @unique @db.VarChar(20)
-  passwordHash   String    @map("password_hash")
-  phone          String?   @db.VarChar(20)
-  profileImage   String?   @map("profile_image")
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName      String        @map("first_name") @db.VarChar(100)
+  lastName       String        @map("last_name") @db.VarChar(100)
+  email          String        @unique @db.VarChar(255)
+  ci             String?       @unique @db.VarChar(20)
+  passwordHash   String        @map("password_hash")
+  phone          String?       @db.VarChar(20)
+  profileImage   String?       @map("profile_image")
   role           user_role
-  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt      DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamp(6)
-  clownEvents    Event[]   @relation("ClownEvents")
-  customerEvents Event[]   @relation("CustomerEvents")
+  createdAt      DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt      DateTime?     @map("deleted_at") @db.Timestamp(6)
+  clownEvents    Event[]       @relation("ClownEvents")
+  customerEvents Event[]       @relation("CustomerEvents")
+  testimonials   Testimonial[]
 
   @@map("users")
 }
@@ -96,4 +97,49 @@ model Service {
   events      Event[]
 
   @@map("services")
+}
+
+enum media_type {
+  IMAGE
+  VIDEO
+
+  @@map("media_type")
+}
+
+model GalleryMedia {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String     @db.VarChar(150)
+  description String?
+  url         String
+  publicId    String?    @map("public_id")
+  type        media_type @default(IMAGE)
+  isFeatured  Boolean    @default(false) @map("is_featured")
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt   DateTime?  @map("deleted_at") @db.Timestamp(6)
+
+  @@map("gallery_media")
+}
+
+model Testimonial {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId String @map("client_id") @db.Uuid
+
+  clientName String  @map("client_name") @db.VarChar(120)
+  comment    String
+  rating     Int     @default(5)
+  eventType  String? @map("event_type") @db.VarChar(100)
+  imageUrl   String? @map("image_url")
+
+  isFeatured Boolean @default(false) @map("is_featured")
+  isActive   Boolean @default(true) @map("is_active")
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  client User @relation(fields: [clientId], references: [id])
+
+  @@map("testimonials")
 }
