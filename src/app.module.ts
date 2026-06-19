@@ -12,9 +12,11 @@ import { PublicModule } from './public/public.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { TestimonialsModule } from './testimonials/testimonials.module';
+import { ReservationsModule } from './reservations/reservations.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule, UploadsModule, PublicModule, AnalyticsModule, GalleryModule, TestimonialsModule],
+  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EventCategoriesModule, ServicesModule, UploadsModule, PublicModule, AnalyticsModule, GalleryModule, TestimonialsModule, ReservationsModule, PaymentsModule],
   controllers: [AppController],
   providers: [AppService],
 })

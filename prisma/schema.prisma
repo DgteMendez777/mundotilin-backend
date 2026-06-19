@@ -23,6 +23,7 @@ model User {
   clownEvents    Event[]       @relation("ClownEvents")
   customerEvents Event[]       @relation("CustomerEvents")
   testimonials   Testimonial[]
+  payments       Payment[]
 
   @@map("users")
 }
@@ -58,6 +59,7 @@ model Event {
   clown         User         @relation("ClownEvents", fields: [clownId], references: [id])
   customer      User         @relation("CustomerEvents", fields: [customerId], references: [id])
   service       Service      @relation(fields: [serviceId], references: [id])
+  payments      Payment[]
 
   @@map("events")
 }
@@ -142,4 +144,40 @@ model Testimonial {
   client User @relation(fields: [clientId], references: [id])
 
   @@map("testimonials")
+}
+
+enum payment_method {
+  QR
+
+  @@map("payment_method")
+}
+
+enum payment_status {
+  PENDING
+  REVIEW
+  PAID
+  REJECTED
+
+  @@map("payment_status")
+}
+
+model Payment {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId       String         @map("event_id") @db.Uuid
+  clientId      String         @map("client_id") @db.Uuid
+  amount        Decimal        @db.Decimal(10, 2)
+  method        payment_method @default(QR)
+  status        payment_status @default(PENDING)
+  qrImageUrl    String?        @map("qr_image_url")
+  proofImageUrl String?        @map("proof_image_url")
+  notes         String?
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  event  Event @relation(fields: [eventId], references: [id])
+  client User  @relation(fields: [clientId], references: [id])
+
+  @@map("payments")
 }
