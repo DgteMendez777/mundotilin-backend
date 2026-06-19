@@ -21,6 +21,11 @@ export class ReservationsService {
   }
 
   async createReservation(data: CreateReservationDto, clientId: string) {
+  try {
+    console.log('====================');
+    console.log('CLIENT ID:', clientId);
+    console.log('DATA:', data);
+
     const client = await this.prisma.user.findFirst({
       where: {
         id: clientId,
@@ -29,9 +34,7 @@ export class ReservationsService {
       },
     });
 
-    if (!client) {
-      throw new BadRequestException('Solo un cliente puede realizar reservas');
-    }
+    console.log('CLIENT:', client);
 
     const clown = await this.prisma.user.findFirst({
       where: {
@@ -40,9 +43,7 @@ export class ReservationsService {
       },
     });
 
-    if (!clown) {
-      throw new NotFoundException('No existe un payaso disponible para asignar la reserva');
-    }
+    console.log('CLOWN:', clown);
 
     const service = await this.prisma.service.findFirst({
       where: {
@@ -52,14 +53,12 @@ export class ReservationsService {
       },
     });
 
-    if (!service) {
-      throw new BadRequestException('El servicio seleccionado no existe o no está activo');
-    }
+    console.log('SERVICE:', service);
 
     const event = await this.prisma.event.create({
       data: {
-        clownId: clown.id,
-        customerId: client.id,
+        clownId: clown!.id,
+        customerId: client!.id,
         serviceId: data.serviceId,
         title: data.title,
         eventDate: new Date(data.eventDate),
@@ -71,32 +70,18 @@ export class ReservationsService {
         status: 'PENDING',
         totalAmount: data.totalAmount,
       },
-      include: {
-        clown: true,
-        customer: true,
-        service: true,
-      },
     });
 
-    const payment = await this.prisma.payment.create({
-      data: {
-        eventId: event.id,
-        clientId: client.id,
-        amount: data.advanceAmount ?? data.totalAmount,
-        method: 'QR',
-        status: 'PENDING',
-        qrImageUrl: process.env.QR_PAYMENT_IMAGE_URL,
-      },
-    });
+    console.log('EVENT CREATED:', event);
 
     return {
-      message: 'Reserva creada correctamente. Realice el pago mediante QR.',
-      event: this.formatEvent(event),
-      payment,
-      qr: {
-        imageUrl: payment.qrImageUrl,
-        amount: payment.amount,
-      },
+      message: 'Reserva creada correctamente',
+      event,
     };
+  } catch (error) {
+    console.error('====================');
+    console.error('RESERVATION ERROR');
+    console.error(error);
+    throw error;
   }
-}
+}}
